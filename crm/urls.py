@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from stark.service.stark import site
+from app import views
 
 urlpatterns = [
     # url(r'^admin/', admin.site.urls),
     url(r'^stark/', site.urls),
     url(r'^rbac/', include('rbac.urls', namespace='rbac')),
+    url(r'^', include('app.urls')),
 ]

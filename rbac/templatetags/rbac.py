@@ -15,6 +15,8 @@ def menu(request):
     """生成菜单"""
 
     menu_dict = request.session.get(settings.MENU_SESSION_KEY)
+    if not menu_dict:
+        return None
     key_list = sorted(menu_dict)
 
     ordered_dict = OrderedDict()

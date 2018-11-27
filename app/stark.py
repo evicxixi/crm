@@ -8,12 +8,45 @@ class DerpartMentConfig(StarkConfig):
         # StarkConfig.display_checkbox,
         'title',
         'intro',
-        StarkConfig.display_edit_del,
+        # StarkConfig.display_edit_del,
     ]
 
 
 site.register(models.Department, DerpartMentConfig)
 
+
+class DoctorConfig(StarkConfig):
+    """docstring for DerpartMentConfig"""
+    list_display = [
+        # StarkConfig.display_checkbox,
+        'name',
+        'level',
+        'price',
+        'gender',
+        'depart',
+        'intro',
+        # StarkConfig.display_edit_del,
+    ]
+
+
+site.register(models.Doctor, DoctorConfig)
+
+
+class CustomerConfig(StarkConfig):
+    """docstring for DerpartMentConfig"""
+    list_display = [
+        # StarkConfig.display_checkbox,
+        'name',
+        'phone',
+        'gender',
+        'disease',
+        'count',
+        'intro',
+        # StarkConfig.display_edit_del,
+    ]
+
+
+site.register(models.Customer, CustomerConfig)
 
 # class MenuConfig(StarkConfig):
 #     """docstring for DerpartMentConfig"""

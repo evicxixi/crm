@@ -6,6 +6,7 @@ from django.forms import formset_factory
 from django.urls import reverse
 
 from rbac import models
+from app import models as AppModels
 from rbac.service.routes import get_all_url_dict
 from rbac.forms.permission import MultiPermissionForm, RoleModelForm, MenuModelForm, PermissionModelForm
 
@@ -22,12 +23,15 @@ def menu_list(request):
     root_permission_list = []
     if mid:
         # 找到可以成为菜单的权限 + 某个菜单下的
-        permissions = models.Permission.objects.filter(menu_id=mid).order_by('-id')
+        permissions = models.Permission.objects.filter(
+            menu_id=mid).order_by('-id')
     else:
         # 找到可以成为菜单的权限
-        permissions = models.Permission.objects.filter(menu__isnull=False).order_by('-id')
+        permissions = models.Permission.objects.filter(
+            menu__isnull=False).order_by('-id')
 
-    root_permission_queryset = permissions.values('id', 'title', 'url', 'name', 'menu__title')
+    root_permission_queryset = permissions.values(
+        'id', 'title', 'url', 'name', 'menu__title')
     root_permission_dict = {}
     for item in root_permission_queryset:
         item['children'] = []
@@ -175,13 +179,15 @@ def multi_permissions(request):
         if formset.is_valid():
             for row_dict in formset.cleaned_data:
                 permission_id = row_dict.pop('id')
-                models.Permission.objects.filter(id=permission_id).update(**row_dict)
+                models.Permission.objects.filter(
+                    id=permission_id).update(**row_dict)
         else:
             update_formset = formset
 
     # 1.1 去数据库中获取所有权限
     # [{},{}]
-    permissions = models.Permission.objects.all().values('id', 'title', 'url', 'name', 'menu_id', 'pid_id')
+    permissions = models.Permission.objects.all().values(
+        'id', 'title', 'url', 'name', 'menu_id', 'pid_id')
     # {'rbac:menu_list':{},'rbac:menu_add':{..}}
     permisssion_dict = OrderedDict()
     for per in permissions:
@@ -189,7 +195,6 @@ def multi_permissions(request):
 
     # 1.2 数据库中有的所有权限name的集合
     permission_name_set = set(permisssion_dict.keys())
-
 
     # 2.1 获取路由系统中所有的URL
     # {'rbac:menu_list':{'url':.... },,,}
@@ -240,9 +245,13 @@ def distribute_permissions(request):
     uid = request.GET.get('uid')
     rid = request.GET.get('rid')
 
+    from django.utils.module_loading import import_string
+    from django.conf import settings
+    user_class = import_string(settings.USER_MODEL_PATH)
+
     if request.method == 'POST' and request.POST.get('postType') == 'role':
         # 更新选择用户所拥有的角色
-        user = models.UserInfo.objects.filter(id=uid).first()
+        user = user_class.objects.filter(id=uid).first()
         if not user:
             return HttpResponse('用户不存在')
         user.roles.set(request.POST.getlist('roles'))
@@ -253,10 +262,13 @@ def distribute_permissions(request):
             return HttpResponse('角色不存在')
         role.permissions.set(request.POST.getlist('permissions'))
 
-    user_list = models.UserInfo.objects.all()
+    # user_list = models.UserInfo.objects.all()
+    user_list = user_class.objects.all()
+
     # ############################## 角色信息 ##########################
     # 当前用户拥有的角色
-    user_has_roles = models.UserInfo.objects.filter(id=uid).values('id', 'roles')
+    user_has_roles = user_class.objects.filter(
+        id=uid).values('id', 'roles')
     user_has_roles_dict = {item['roles']: None for item in user_has_roles}
 
     # 所有的角色
@@ -269,14 +281,16 @@ def distribute_permissions(request):
         role_has_permissions = models.Role.objects.filter(id=rid, permissions__id__isnull=False).values('id',
                                                                                                         'permissions')
     elif uid and not rid:
-        user = models.UserInfo.objects.filter(id=uid).first()
+        user = user_class.objects.filter(id=uid).first()
         if not user:
             return HttpResponse('用户不存在')
-        role_has_permissions = user.roles.filter(permissions__id__isnull=False).values('id', 'permissions')
+        role_has_permissions = user.roles.filter(
+            permissions__id__isnull=False).values('id', 'permissions')
     else:
         role_has_permissions = []
 
-    role_has_permissions_dict = {item['permissions']: None for item in role_has_permissions}
+    role_has_permissions_dict = {
+        item['permissions']: None for item in role_has_permissions}
 
     # 菜单
     queryset = models.Menu.objects.values('id', 'title')
@@ -291,7 +305,8 @@ def distribute_permissions(request):
     menu_dict[None] = other
 
     # 根权限
-    root_permission = models.Permission.objects.filter(menu__isnull=False).values('id', 'title', 'menu_id')
+    root_permission = models.Permission.objects.filter(
+        menu__isnull=False).values('id', 'title', 'menu_id')
     root_permission_dict = {}
     for per in root_permission:
         per['children'] = []
@@ -302,7 +317,8 @@ def distribute_permissions(request):
         menu_dict[menu_id]['children'].append(per)
 
     # 子权限
-    node_permission = models.Permission.objects.filter(menu__isnull=True).values('id', 'title', 'pid_id')
+    node_permission = models.Permission.objects.filter(
+        menu__isnull=True).values('id', 'title', 'pid_id')
     for per in node_permission:
         pid = per['pid_id']
         if not pid:
@@ -323,6 +339,23 @@ def distribute_permissions(request):
             'rid': rid
         }
     )
+
+
+def role_add(request):
+    """
+    添加菜单
+    :param request:
+    :return:
+    """
+    if request.method == 'GET':
+        form = RoleModelForm()
+    else:
+        form = RoleModelForm(request.POST)
+        if form.is_valid():
+            print(form.data)
+            form.save()
+            return redirect(reverse('rbac:role_add'))
+    return render(request, 'rbac/role_change.html', {'form': form})
 
 
 def role_list(request):

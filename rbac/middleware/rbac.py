@@ -2,11 +2,12 @@
 # -*- coding:utf-8 -*-
 import re
 from django.conf import settings
-from django.shortcuts import HttpResponse
+from django.shortcuts import HttpResponse, redirect
 from django.http import JsonResponse
 
 
 class MiddlewareMixin(object):
+
     def __init__(self, get_response=None):
         self.get_response = get_response
         super(MiddlewareMixin, self).__init__()
@@ -38,7 +39,8 @@ class RbacMiddleware(MiddlewareMixin):
         # 2. 获取权限
         permission_dict = request.session.get(settings.PERMISSION_SESSION_KEY)
         if not permission_dict:
-            return HttpResponse('无权限信息，请重新登录')
+            # return HttpResponse('无权限信息，请重新登录！')
+            return redirect('/login/')
 
         flag = False
 
@@ -58,7 +60,8 @@ class RbacMiddleware(MiddlewareMixin):
                 if pid:
                     request.current_permission_pid = item['pid']
                     request.current_breadcrumb_list.extend([
-                        {'title': permission_dict[pid_name]['title'], 'url': pid_url},
+                        {'title': permission_dict[pid_name][
+                            'title'], 'url': pid_url},
                         {'title': item['title'], 'url': url, 'class': 'active'}
                     ])
                 else:

@@ -34,7 +34,8 @@ class MultiPermissionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['menu_id'].choices += models.Menu.objects.values_list('id', 'title')
+        self.fields['menu_id'].choices += models.Menu.objects.values_list(
+            'id', 'title')
         self.fields['pid_id'].choices += models.Permission.objects.filter(pid__isnull=True).exclude(
             menu__isnull=True).values_list('id', 'title')
 
@@ -50,7 +51,8 @@ class RoleModelForm(forms.ModelForm):
     class Meta:
         model = models.Role
         fields = '__all__'
-        widgets = {'title': forms.TextInput(attrs={'placeholder': '请输入角色名称', 'class': 'form-control'})}
+        widgets = {'title': forms.TextInput(
+            attrs={'placeholder': '请输入角色名称', 'class': 'form-control'})}
 
 
 ICON_LIST = [
@@ -68,7 +70,8 @@ ICON_LIST = [
     ['fa-arrows-h', '<i aria-hidden="true" class="fa fa-arrows-h"></i>'],
     ['fa-arrows-v', '<i aria-hidden="true" class="fa fa-arrows-v"></i>'],
     ['fa-asl-interpreting', '<i aria-hidden="true" class="fa fa-asl-interpreting"></i>'],
-    ['fa-assistive-listening-systems', '<i aria-hidden="true" class="fa fa-assistive-listening-systems"></i>'],
+    ['fa-assistive-listening-systems',
+        '<i aria-hidden="true" class="fa fa-assistive-listening-systems"></i>'],
     ['fa-asterisk', '<i aria-hidden="true" class="fa fa-asterisk"></i>'],
     ['fa-at', '<i aria-hidden="true" class="fa fa-at"></i>'],
     ['fa-audio-description', '<i aria-hidden="true" class="fa fa-audio-description"></i>'],
@@ -92,7 +95,8 @@ ICON_LIST = [
     ['fa-battery-full', '<i aria-hidden="true" class="fa fa-battery-full"></i>'],
     ['fa-battery-half', '<i aria-hidden="true" class="fa fa-battery-half"></i>'],
     ['fa-battery-quarter', '<i aria-hidden="true" class="fa fa-battery-quarter"></i>'],
-    ['fa-battery-three-quarters', '<i aria-hidden="true" class="fa fa-battery-three-quarters"></i>'],
+    ['fa-battery-three-quarters',
+        '<i aria-hidden="true" class="fa fa-battery-three-quarters"></i>'],
     ['fa-bed', '<i aria-hidden="true" class="fa fa-bed"></i>'],
     ['fa-beer', '<i aria-hidden="true" class="fa fa-beer"></i>'],
     ['fa-bell', '<i aria-hidden="true" class="fa fa-bell"></i>'],
@@ -129,9 +133,12 @@ ICON_LIST = [
     ['fa-camera', '<i aria-hidden="true" class="fa fa-camera"></i>'],
     ['fa-camera-retro', '<i aria-hidden="true" class="fa fa-camera-retro"></i>'],
     ['fa-car', '<i aria-hidden="true" class="fa fa-car"></i>'],
-    ['fa-caret-square-o-down', '<i aria-hidden="true" class="fa fa-caret-square-o-down"></i>'],
-    ['fa-caret-square-o-left', '<i aria-hidden="true" class="fa fa-caret-square-o-left"></i>'],
-    ['fa-caret-square-o-right', '<i aria-hidden="true" class="fa fa-caret-square-o-right"></i>'],
+    ['fa-caret-square-o-down',
+        '<i aria-hidden="true" class="fa fa-caret-square-o-down"></i>'],
+    ['fa-caret-square-o-left',
+        '<i aria-hidden="true" class="fa fa-caret-square-o-left"></i>'],
+    ['fa-caret-square-o-right',
+        '<i aria-hidden="true" class="fa fa-caret-square-o-right"></i>'],
     ['fa-caret-square-o-up', '<i aria-hidden="true" class="fa fa-caret-square-o-up"></i>'],
     ['fa-cart-arrow-down', '<i aria-hidden="true" class="fa fa-cart-arrow-down"></i>'],
     ['fa-cart-plus', '<i aria-hidden="true" class="fa fa-cart-plus"></i>'],
@@ -196,9 +203,11 @@ ICON_LIST = [
     ['fa-exchange', '<i aria-hidden="true" class="fa fa-exchange"></i>'],
     ['fa-exclamation', '<i aria-hidden="true" class="fa fa-exclamation"></i>'],
     ['fa-exclamation-circle', '<i aria-hidden="true" class="fa fa-exclamation-circle"></i>'],
-    ['fa-exclamation-triangle', '<i aria-hidden="true" class="fa fa-exclamation-triangle"></i>'],
+    ['fa-exclamation-triangle',
+        '<i aria-hidden="true" class="fa fa-exclamation-triangle"></i>'],
     ['fa-external-link', '<i aria-hidden="true" class="fa fa-external-link"></i>'],
-    ['fa-external-link-square', '<i aria-hidden="true" class="fa fa-external-link-square"></i>'],
+    ['fa-external-link-square',
+        '<i aria-hidden="true" class="fa fa-external-link-square"></i>'],
     ['fa-eye', '<i aria-hidden="true" class="fa fa-eye"></i>'],
     ['fa-eye-slash', '<i aria-hidden="true" class="fa fa-eye-slash"></i>'],
     ['fa-eyedropper', '<i aria-hidden="true" class="fa fa-eyedropper"></i>'],
@@ -446,8 +455,10 @@ ICON_LIST = [
     ['fa-thermometer-empty', '<i aria-hidden="true" class="fa fa-thermometer-empty"></i>'],
     ['fa-thermometer-full', '<i aria-hidden="true" class="fa fa-thermometer-full"></i>'],
     ['fa-thermometer-half', '<i aria-hidden="true" class="fa fa-thermometer-half"></i>'],
-    ['fa-thermometer-quarter', '<i aria-hidden="true" class="fa fa-thermometer-quarter"></i>'],
-    ['fa-thermometer-three-quarters', '<i aria-hidden="true" class="fa fa-thermometer-three-quarters"></i>'],
+    ['fa-thermometer-quarter',
+        '<i aria-hidden="true" class="fa fa-thermometer-quarter"></i>'],
+    ['fa-thermometer-three-quarters',
+        '<i aria-hidden="true" class="fa fa-thermometer-three-quarters"></i>'],
     ['fa-thumb-tack', '<i aria-hidden="true" class="fa fa-thumb-tack"></i>'],
     ['fa-thumbs-down', '<i aria-hidden="true" class="fa fa-thumbs-down"></i>'],
     ['fa-thumbs-o-down', '<i aria-hidden="true" class="fa fa-thumbs-o-down"></i>'],
@@ -492,7 +503,8 @@ ICON_LIST = [
     ['fa-vcard', '<i aria-hidden="true" class="fa fa-vcard"></i>'],
     ['fa-vcard-o', '<i aria-hidden="true" class="fa fa-vcard-o"></i>'],
     ['fa-video-camera', '<i aria-hidden="true" class="fa fa-video-camera"></i>'],
-    ['fa-volume-control-phone', '<i aria-hidden="true" class="fa fa-volume-control-phone"></i>'],
+    ['fa-volume-control-phone',
+        '<i aria-hidden="true" class="fa fa-volume-control-phone"></i>'],
     ['fa-volume-down', '<i aria-hidden="true" class="fa fa-volume-down"></i>'],
     ['fa-volume-off', '<i aria-hidden="true" class="fa fa-volume-off"></i>'],
     ['fa-volume-up', '<i aria-hidden="true" class="fa fa-volume-up"></i>'],

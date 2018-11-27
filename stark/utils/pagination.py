@@ -3,8 +3,10 @@
 """
 from urllib.parse import urlencode
 
+
 class Pagination(object):
-    def __init__(self, current_page, all_count, base_url,query_params, per_page=10, pager_page_count=11):
+
+    def __init__(self, current_page, all_count, base_url, query_params, per_page=10, pager_page_count=11):
         """
         分页初始化
         :param current_page: 当前页码
@@ -79,7 +81,8 @@ class Pagination(object):
             prev = '<li><a href="#">上一页</a></li>'
         else:
             self.query_params['page'] = self.current_page - 1
-            prev = '<li><a href="%s?%s">上一页</a></li>' % (self.base_url,self.query_params.urlencode())
+            prev = '<li><a href="%s?%s">上一页</a></li>' % (
+                self.base_url, self.query_params.urlencode())
         page_list.append(prev)
         for i in range(pager_start, pager_end + 1):
             self.query_params['page'] = i
@@ -87,14 +90,16 @@ class Pagination(object):
                 tpl = '<li class="active"><a href="%s?%s">%s</a></li>' % (
                     self.base_url, self.query_params.urlencode(), i,)
             else:
-                tpl = '<li><a href="%s?%s">%s</a></li>' % (self.base_url, self.query_params.urlencode(), i,)
+                tpl = '<li><a href="%s?%s">%s</a></li>' % (
+                    self.base_url, self.query_params.urlencode(), i,)
             page_list.append(tpl)
 
         if self.current_page >= self.pager_count:
             nex = '<li><a href="#">下一页</a></li>'
         else:
             self.query_params['page'] = self.current_page + 1
-            nex = '<li><a href="%s?%s">下一页</a></li>' % (self.base_url, self.query_params.urlencode(),)
+            nex = '<li><a href="%s?%s">下一页</a></li>' % (
+                self.base_url, self.query_params.urlencode(),)
         page_list.append(nex)
         page_str = "".join(page_list)
         return page_str

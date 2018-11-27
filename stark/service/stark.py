@@ -7,35 +7,35 @@ from django.urls import reverse
 from django import forms
 from django.db.models import Q
 from django.http import QueryDict
-from django.db.models.fields.related import ForeignKey,ManyToManyField,OneToOneField
+from django.db.models.fields.related import ForeignKey, ManyToManyField, OneToOneField
 
 
 class ModelConfigMapping(object):
 
-    def __init__(self,model,config,prev):
+    def __init__(self, model, config, prev):
         self.model = model
         self.config = config
         self.prev = prev
 
 
-def get_choice_text(field,head):
+def get_choice_text(field, head):
     """
     获取choice对应的内容
     :param field:  字段名称
     :param head: 表头名称
     :return:
     """
+
     def inner(self, row=None, header=False):
         if header:
             return head
-        func_name = "get_%s_display" %field
-        return getattr(row,func_name)()
+        func_name = "get_%s_display" % field
+        return getattr(row, func_name)()
     return inner
 
 
-
 class Row(object):
-    def __init__(self,data_list,option,query_dict):
+    def __init__(self, data_list, option, query_dict):
         """
         元组
         :param data_list:元组或queryset
@@ -53,35 +53,33 @@ class Row(object):
         origin_value_list = self.query_dict.getlist(self.option.field)  # [2,]
         if origin_value_list:
             tatal_query_dict.pop(self.option.field)
-            yield '<a href="?%s">全部</a>' %(tatal_query_dict.urlencode(),)
+            yield '<a href="?%s">全部</a>' % (tatal_query_dict.urlencode(),)
         else:
-            yield '<a class="active" href="?%s">全部</a>' %(tatal_query_dict.urlencode(),)
-
+            yield '<a class="active" href="?%s">全部</a>' % (tatal_query_dict.urlencode(),)
 
         yield '</div>'
         yield '<div class="others">'
 
-
-        for item in self.data_list: # item=(),queryset中的一个对象
+        for item in self.data_list:  # item=(),queryset中的一个对象
             val = self.option.get_value(item)
             text = self.option.get_text(item)
 
             query_dict = self.query_dict.copy()
             query_dict._mutable = True
 
-            if not self.option.is_multi: # 单选
+            if not self.option.is_multi:  # 单选
                 if str(val) in origin_value_list:
                     query_dict.pop(self.option.field)
-                    yield '<a class="active" href="?%s">%s</a>' %(query_dict.urlencode(),text)
+                    yield '<a class="active" href="?%s">%s</a>' % (query_dict.urlencode(), text)
                 else:
                     query_dict[self.option.field] = val
                     yield '<a href="?%s">%s</a>' % (query_dict.urlencode(), text)
-            else: # 多选
+            else:  # 多选
                 multi_val_list = query_dict.getlist(self.option.field)
                 if str(val) in origin_value_list:
                     # 已经选，把自己去掉
                     multi_val_list.remove(str(val))
-                    query_dict.setlist(self.option.field,multi_val_list)
+                    query_dict.setlist(self.option.field, multi_val_list)
                     yield '<a class="active" href="?%s">%s</a>' % (query_dict.urlencode(), text)
                 else:
                     multi_val_list.append(val)
@@ -93,7 +91,7 @@ class Row(object):
 
 class Option(object):
 
-    def __init__(self, field, condition=None, is_choice=False,text_func=None,value_func=None,is_multi=False):
+    def __init__(self, field, condition=None, is_choice=False, text_func=None, value_func=None, is_multi=False):
         self.field = field
         self.is_choice = is_choice
         if not condition:
@@ -103,28 +101,29 @@ class Option(object):
         self.value_func = value_func
         self.is_multi = is_multi
 
-    def get_queryset(self, _field, model_class,query_dict):
+    def get_queryset(self, _field, model_class, query_dict):
         if isinstance(_field, ForeignKey) or isinstance(_field, ManyToManyField):
-            row = Row(_field.rel.model.objects.filter(**self.condition),self,query_dict)
+            row = Row(_field.rel.model.objects.filter(
+                **self.condition), self, query_dict)
         else:
             if self.is_choice:
-                row = Row(_field.choices,self,query_dict)
+                row = Row(_field.choices, self, query_dict)
             else:
-                row = Row(model_class.objects.filter(**self.condition),self,query_dict)
+                row = Row(model_class.objects.filter(
+                    **self.condition), self, query_dict)
         return row
 
-    def get_text(self,item):
+    def get_text(self, item):
         if self.text_func:
             return self.text_func(item)
         return str(item)
 
-    def get_value(self,item):
+    def get_value(self, item):
         if self.value_func:
             return self.value_func(item)
         if self.is_choice:
             return item[0]
         return item.pk
-
 
 
 class ChangeList(object):
@@ -138,7 +137,8 @@ class ChangeList(object):
         self.page = page
 
         self.config = config
-        self.action_list = [{'name': func.__name__, 'text': func.text} for func in config.get_action_list()]
+        self.action_list = [{'name': func.__name__, 'text': func.text}
+                            for func in config.get_action_list()]
 
         self.add_btn = config.get_add_btn()
 
@@ -147,12 +147,11 @@ class ChangeList(object):
         self.list_display = config.get_list_display()
         self.list_filter = config.get_list_filter()
 
-
     def gen_list_filter_rows(self):
 
         for option in self.list_filter:
             _field = self.config.model_class._meta.get_field(option.field)
-            yield option.get_queryset(_field, self.config.model_class,self.config.request.GET)
+            yield option.get_queryset(_field, self.config.model_class, self.config.request.GET)
 
 
 class StarkConfig(object):
@@ -203,7 +202,7 @@ class StarkConfig(object):
     search_list = []
     list_filter = []
 
-    def __init__(self, model_class, site,prev):
+    def __init__(self, model_class, site, prev):
         self.model_class = model_class
         self.site = site
         self.prev = prev
@@ -310,25 +309,26 @@ class StarkConfig(object):
 
         query_params = request.GET.copy()
         query_params._mutable = True
-        page = Pagination(request.GET.get('page'), total_count, request.path_info, query_params, per_page=7)
+        page = Pagination(request.GET.get('page'), total_count,
+                          request.path_info, query_params, per_page=20)
 
         list_filter = self.get_list_filter()
         # 获取组合搜索筛选
         origin_queryset = self.get_queryset()
-        queryset = origin_queryset.filter(con).filter(**self.get_list_filter_condition()).order_by(*self.get_order_by()).distinct()[page.start:page.end]
+        queryset = origin_queryset.filter(con).filter(
+            **self.get_list_filter_condition()).order_by(*self.get_order_by()).distinct()[page.start:page.end]
 
         cl = ChangeList(self, queryset, q, search_list, page)
 
         # ######## 组合搜索 #########
         # list_filter = ['name','user']
 
-
         context = {
             'cl': cl
         }
         return render(request, 'stark/changelist.html', context)
 
-    def save(self,form,modify=False):
+    def save(self, form, modify=False):
         """
         :param form:
         :param modify: True,表示要修改；False新增
@@ -350,7 +350,7 @@ class StarkConfig(object):
 
         form = AddModelForm(request.POST)
         if form.is_valid():
-            self.save(form,modify=False)
+            self.save(form, modify=False)
             return redirect(self.reverse_list_url())
         return render(request, 'stark/change.html', {'form': form})
 
@@ -398,10 +398,14 @@ class StarkConfig(object):
 
     def get_urls(self):
         urlpatterns = [
-            url(r'^list/$', self.wrapper(self.changelist_view), name=self.get_list_url_name),
-            url(r'^add/$', self.wrapper(self.add_view), name=self.get_add_url_name),
-            url(r'^(?P<pk>\d+)/change/', self.wrapper(self.change_view), name=self.get_change_url_name),
-            url(r'^(?P<pk>\d+)/del/', self.wrapper(self.delete_view), name=self.get_del_url_name),
+            url(r'^list/$', self.wrapper(self.changelist_view),
+                name=self.get_list_url_name),
+            url(r'^add/$', self.wrapper(self.add_view),
+                name=self.get_add_url_name),
+            url(r'^(?P<pk>\d+)/change/', self.wrapper(self.change_view),
+                name=self.get_change_url_name),
+            url(r'^(?P<pk>\d+)/del/', self.wrapper(self.delete_view),
+                name=self.get_del_url_name),
         ]
 
         extra = self.extra_url()
@@ -418,9 +422,9 @@ class StarkConfig(object):
         app_label = self.model_class._meta.app_label
         model_name = self.model_class._meta.model_name
         if self.prev:
-            name = '%s_%s_%s_changelist' % (app_label,model_name,self.prev)
+            name = '%s_%s_%s_changelist' % (app_label, model_name, self.prev)
         else:
-            name = '%s_%s_changelist' % (app_label,model_name)
+            name = '%s_%s_changelist' % (app_label, model_name)
         return name
 
     @property
@@ -428,9 +432,9 @@ class StarkConfig(object):
         app_label = self.model_class._meta.app_label
         model_name = self.model_class._meta.model_name
         if self.prev:
-            name = '%s_%s_%s_add' % (app_label,model_name,self.prev)
+            name = '%s_%s_%s_add' % (app_label, model_name, self.prev)
         else:
-            name = '%s_%s_add' % (app_label,model_name)
+            name = '%s_%s_add' % (app_label, model_name)
         return name
 
     @property
@@ -438,9 +442,9 @@ class StarkConfig(object):
         app_label = self.model_class._meta.app_label
         model_name = self.model_class._meta.model_name
         if self.prev:
-            name = '%s_%s_%s_change' % (app_label,model_name,self.prev)
+            name = '%s_%s_%s_change' % (app_label, model_name, self.prev)
         else:
-            name = '%s_%s_change' % (app_label,model_name)
+            name = '%s_%s_change' % (app_label, model_name)
         return name
 
     @property
@@ -448,9 +452,9 @@ class StarkConfig(object):
         app_label = self.model_class._meta.app_label
         model_name = self.model_class._meta.model_name
         if self.prev:
-            name = '%s_%s_%s_del' % (app_label,model_name,self.prev)
+            name = '%s_%s_%s_del' % (app_label, model_name, self.prev)
         else:
-            name = '%s_%s_del' % (app_label,model_name)
+            name = '%s_%s_del' % (app_label, model_name)
         return name
 
     def reverse_list_url(self):
@@ -518,10 +522,11 @@ class AdminSite(object):
         self.app_name = 'stark'
         self.namespace = 'stark'
 
-    def register(self, model_class, stark_config=None,prev=None):
+    def register(self, model_class, stark_config=None, prev=None):
         if not stark_config:
             stark_config = StarkConfig
-        self._registry.append(ModelConfigMapping(model_class,stark_config(model_class, self,prev),prev))
+        self._registry.append(ModelConfigMapping(
+            model_class, stark_config(model_class, self, prev), prev))
 
     def get_urls(self):
 
@@ -530,9 +535,11 @@ class AdminSite(object):
             app_label = item.model._meta.app_label
             model_name = item.model._meta.model_name
             if item.prev:
-                temp = url(r'^%s/%s/%s/' % (app_label, model_name,item.prev), (item.config.urls, None, None))
+                temp = url(r'^%s/%s/%s/' % (app_label, model_name,
+                                            item.prev), (item.config.urls, None, None))
             else:
-                temp = url(r'^%s/%s/' % (app_label, model_name,), (item.config.urls, None, None))
+                temp = url(r'^%s/%s/' % (app_label, model_name,),
+                           (item.config.urls, None, None))
             urlpatterns.append(temp)
         return urlpatterns
 
